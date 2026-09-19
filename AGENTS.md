@@ -98,3 +98,13 @@ git pull --ff-only origin main
 ```
 
 If the worktree is dirty, do not discard local changes you did not make.
+
+## Custom-domain deployment
+
+The canonical URL is `https://glaubi.net/cloudflare/`. Deploy from `cloudflare/`
+with `wrangler deploy --dry-run`, then `wrangler deploy`. The exact bare path
+redirects to the slash URL; the descendant route proxies this repository's Pages
+origin. Use the slash URL for query strings (Cloudflare exact routes include the
+query string in matching). Do not broaden the route to `/cloudflare*`.
+Verify the slash page, `favicon.svg`, missing-path 404, and `wrangler deployments
+status --json`. The public route-index card lives separately in `~/git/glaubinet`.
