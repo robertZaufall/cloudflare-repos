@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  var p = location.pathname;
+  if (p.charAt(p.length - 1) !== '/') p += '/';
+  document.write('<base href="' + p + '">');
+</script>
+<title>Cloudflare GitHub Repository Atlas</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d12;
+    --surface: #14161e;
+    --surface2: #1a1d27;
+    --surface3: #222633;
+    --border: #323644;
+    --text: #f4f1ea;
+    --text-muted: #b7b0a4;
+    --cloudflare: #f38020;
+    --blue: #3b82f6;
+    --cyan: #22d3ee;
+    --green: #22c55e;
+    --orange: #f38020;
+    --red: #ef4444;
+    --pink: #f472b6;
+    --purple: #a78bfa;
+    --yellow: #fbbf24;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 85% -10%, rgba(243, 128, 32, 0.22), transparent 28rem),
+      radial-gradient(circle at 8% 4%, rgba(251, 191, 36, 0.1), transparent 26rem),
+      linear-gradient(180deg, #16120c 0%, var(--bg) 42rem);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    padding: 40px 24px 52px;
+  }
+
+  a { color: inherit; }
+
+  .header,
+  .search-panel,
+  .repo-section,
+  .footer {
+    max-width: 1480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-header {
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 30px;
+    line-height: 1.15;
+    letter-spacing: -0.6px;
+  }
+
+  .logo-box {
+    width: 38px;
+    height: 38px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f38020, #ffbf5a);
+    color: #1a1208;
+    font-weight: 800;
+    box-shadow: 0 0 24px rgba(243, 128, 32, 0.32);
+  }
+
+  .page-header p {
+    max-width: 920px;
+    margin: 10px 0 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  .metric-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .metric-card {
+    min-width: 148px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(17, 22, 26, 0.8);
+  }
+
+  .metric-card strong {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  .metric-card span {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .jump-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-top: 18px;
+    align-items: flex-start;
+  }
+
+  .jump-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(17, 22, 26, 0.48);
+  }
+
+  .jump-group-label {
+    padding: 0 4px 0 2px;
+    color: var(--text-muted);
+    font: 700 10px 'JetBrains Mono', monospace;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+  }
+
+  .jump-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 10px;
+    background: rgba(17, 22, 26, 0.72);
+    color: var(--text);
+    text-decoration: none;
+    font: 700 11px 'JetBrains Mono', monospace;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .jump-group-clusters a {
+    border-color: rgba(243, 128, 32), 0.34);
+    background: rgba(243, 128, 32), 0.07);
+  }
+
+  .jump-group-other {
+    border-color: rgba(80, 230, 255, 0.22);
+    background: rgba(80, 230, 255, 0.045);
+  }
+
+  .jump-group-other a {
+    border-color: rgba(80, 230, 255, 0.36);
+    background: rgba(80, 230, 255, 0.08);
+  }
+
+  .jump-nav a:hover {
+    border-color: var(--cloudflare);
+    color: var(--cloudflare);
+    background: rgba(243, 128, 32), 0.1);
+  }
+
+  .jump-group-other a:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(80, 230, 255, 0.12);
+  }
+
+  .jump-nav span {
+    color: var(--text-muted);
+    font-size: 10px;
+  }
+
+  .search-panel {
+    display: grid;
+    grid-template-columns: auto minmax(240px, 1fr) auto auto auto auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background:
+      radial-gradient(circle at top right, rgba(243, 128, 32), 0.14), transparent 24rem),
+      linear-gradient(180deg, rgba(23, 30, 35, 0.98), rgba(17, 22, 26, 0.98));
+  }
+
+  .search-label,
+  .sort-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .search-input {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(8, 11, 13, 0.95);
+    color: var(--text);
+    outline: none;
+    padding: 12px 14px;
+    font: 500 14px 'DM Sans', system-ui, sans-serif;
+  }
+
+  .search-input:focus {
+    border-color: rgba(243, 128, 32), 0.82);
+    box-shadow: 0 0 0 3px rgba(243, 128, 32), 0.14);
+  }
+
+  .button {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(8, 11, 13, 0.95);
+    color: var(--text);
+    padding: 12px 13px;
+    font: 700 12px 'JetBrains Mono', monospace;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .button:hover,
+  .button.active {
+    border-color: var(--cloudflare);
+    color: var(--cloudflare);
+  }
+
+  .button:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .repo-section {
+    margin-top: 34px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: end;
+    margin-bottom: 14px;
+  }
+
+  .section-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+  }
+
+  .section-header p {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .section-mark {
+    width: 10px;
+    height: 20px;
+    border-radius: 2px;
+    background: var(--cloudflare);
+    display: inline-block;
+  }
+
+  .section-mark-blue { background: var(--blue); }
+  .section-mark-cyan { background: var(--cyan); }
+  .section-mark-orange { background: var(--orange); }
+  .section-mark-pink { background: var(--pink); }
+  .section-mark-purple { background: var(--purple); }
+  .section-mark-green { background: var(--green); }
+  .section-mark-red { background: var(--red); }
+
+  .count-pill,
+  .cluster-pill {
+    display: inline-block;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 8px;
+    color: var(--text-muted);
+    background: rgba(8, 11, 13, 0.45);
+    font: 600 11px 'JetBrains Mono', monospace;
+  }
+
+  .count-pill {
+    white-space: nowrap;
+  }
+
+  .cluster-pill {
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .cluster-link {
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .cluster-link:hover {
+    color: var(--cloudflare);
+    border-color: var(--cloudflare);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    scrollbar-color: #33516d #08111d;
+    scrollbar-width: thin;
+  }
+
+  table {
+    width: 100%;
+    min-width: 1120px;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: fixed;
+  }
+
+  .traction-section table {
+    min-width: 1220px;
+  }
+
+  .col-repository { width: 22%; }
+  .col-language { width: 10%; }
+  .col-description { width: 48%; }
+  .col-github { width: 20%; }
+  .col-traction-repository { width: 17%; }
+  .col-traction-description { width: 48%; }
+  .col-traction-cluster { width: 12%; }
+  .col-traction-language { width: 8%; }
+  .col-traction-github { width: 15%; }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 13px 14px;
+    text-align: left;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    font: 700 11px 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+  }
+
+  td {
+    padding: 13px 14px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(243, 128, 32), 0.045); }
+
+  .repo-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 700 14px 'JetBrains Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .repo-name a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .repo-name a:hover,
+  .repo-slug:hover {
+    color: var(--cloudflare);
+    text-decoration: underline;
+  }
+
+  .repo-slug {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font: 500 11px 'JetBrains Mono', monospace;
+  }
+
+  .avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--surface3);
+  }
+
+  .tag,
+  .badge {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font: 700 11px 'JetBrains Mono', monospace;
+    background: rgba(149, 163, 154, 0.14);
+    color: var(--text-muted);
+  }
+
+  .tag-py { background: rgba(127, 186, 0, 0.14); color: var(--green); }
+  .tag-csharp { background: rgba(134, 97, 197, 0.18); color: var(--purple); }
+  .tag-c, .tag-cpp, .tag-cuda { background: rgba(69, 168, 255, 0.13); color: var(--blue); }
+  .tag-ts, .tag-js { background: rgba(250, 204, 21, 0.13); color: var(--yellow); }
+  .tag-go { background: rgba(80, 230, 255, 0.13); color: var(--cyan); }
+  .tag-shell { background: rgba(244, 114, 182, 0.13); color: var(--pink); }
+
+  .topic-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 7px;
+  }
+
+  .badge {
+    font-size: 10px;
+    color: #c0d1e4;
+  }
+
+  .keyword-button {
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .keyword-button:hover,
+  .keyword-button:focus-visible {
+    color: var(--cloudflare);
+    background: rgba(243, 128, 32), 0.16);
+    outline: none;
+  }
+
+  .description-cell {
+    color: var(--text);
+    max-width: 54rem;
+  }
+
+  .github-cell {
+    min-width: 210px;
+  }
+
+  .gh-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px 10px;
+    align-items: center;
+  }
+
+  .star-count,
+  .fork-count,
+  .commit-count,
+  .metric-sm {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .star-count {
+    color: var(--yellow);
+    font-weight: 800;
+    font-size: 13px;
+  }
+
+  .fork-count,
+  .commit-count,
+  .metric-sm {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .last-updated {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  .activity-block {
+    margin-top: 8px;
+  }
+
+  .activity-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(149, 163, 154, 0.16);
+    overflow: hidden;
+  }
+
+  .activity-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #f38020, #ffbf5a);
+  }
+
+  .activity-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 5px;
+    color: var(--text-muted);
+    font: 600 10px 'JetBrains Mono', monospace;
+  }
+
+  .number-cell,
+  .rank-cell,
+  .date-cell {
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .number-cell {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .score-cell {
+    color: var(--cloudflare);
+  }
+
+  .date-cell {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .footer {
+    margin-top: 30px;
+    color: var(--text-muted);
+    font: 500 11px 'JetBrains Mono', monospace;
+    line-height: 1.7;
+  }
+
+  .footer a { color: var(--cloudflare); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    body { padding: 26px 14px 40px; }
+    .page-title { font-size: 24px; }
+    .search-panel { grid-template-columns: 1fr; }
+    .button, .search-label, .sort-label { width: 100%; }
+    .section-header { display: block; }
+    .count-pill { margin-top: 10px; }
+  }
+</style>
+</head>
+<body>
+  <header class="header page-header">
+    <h1 class="page-title"><span class="logo-box">CF</span>Cloudflare GitHub Repository Atlas</h1>
+    <p>Searchable snapshot of public repositories from Cloudflare's <a href="https://github.com/orgs/cloudflare/repositories" target="_blank" rel="noreferrer">cloudflare organization</a>. Included repositories have more than 200 stars and were pushed within the last three months, since 2026-06-19.</p>
+    <div class="metric-strip" aria-label="Catalog summary">
+      <div class="metric-card"><strong>62</strong><span>qualified repos</span></div>
+      <div class="metric-card"><strong>197k</strong><span>combined stars</span></div>
+      <div class="metric-card"><strong>2.5k</strong><span>commits in 30d</span></div>
+      <div class="metric-card"><strong>7</strong><span>technology clusters</span></div>
+    </div>
+    <nav class="jump-nav" aria-label="Section links">
+      <div class="jump-group jump-group-clusters"><span class="jump-group-label">Clusters</span><a href="#section-traction">Fresh Traction</a>
+<a href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a>
+<a href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a>
+<a href="#cluster-networking-protocols">Networking, Protocols &amp; Performance</a>
+<a href="#cluster-security-pki-crypto">Security, PKI &amp; Cryptography</a>
+<a href="#cluster-sdks-apis-iac">SDKs, APIs &amp; Infrastructure as Code</a>
+<a href="#cluster-observability-systems">Observability, Systems &amp; Libraries</a>
+<a href="#cluster-docs-templates-community">Docs, Templates &amp; Community</a></div>
+    </nav>
+  </header>
+
+  <div class="search-panel" role="search">
+    <div class="search-label">Search</div>
+    <input id="global-table-search" class="search-input" type="search" autocomplete="off" spellcheck="false" placeholder="repo, topic, language, description">
+    <button id="global-search-clear" class="button" type="button" disabled>Clear</button>
+    <div class="sort-label">Sort by</div>
+    <button id="sort-stars" class="button" type="button">Stars</button>
+    <button id="sort-fresh" class="button active" type="button">Freshness</button>
+  </div>
+
+
+<section class="repo-section traction-section" id="section-traction" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-blue"></span>Established Repos With Fresh Traction</h2>
+      <p>Ranked by recent commits, freshness, stars, and forks so active projects with broad audiences rise first.</p>
+    </div>
+    <span class="count-pill">Top 25</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-traction-repository">
+        <col class="col-traction-language">
+        <col class="col-traction-description">
+        <col class="col-traction-cluster">
+        <col class="col-traction-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>Cluster</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="5232" data-pushed="1789790982" data-name="cloudflare-docs" data-cluster="docs-templates-community">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-docs" target="_blank" rel="noreferrer">cloudflare-docs</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-docs" target="_blank" rel="noreferrer">cloudflare/cloudflare-docs</a></td>
+  <td><span class="tag tag-mdx">MDX</span></td>
+  <td class="description-cell">Cloudflare’s documentation<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="docs" title="Filter by docs">docs</button><button class="badge keyword-button" type="button" data-filter-keyword="hacktoberfest" title="Filter by hacktoberfest">hacktoberfest</button><button class="badge keyword-button" type="button" data-filter-keyword="markdown" title="Filter by markdown">markdown</button><button class="badge keyword-button" type="button" data-filter-keyword="mdx" title="Filter by mdx">mdx</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-docs-templates-community">Docs, Templates &amp; Community</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 5.2k</span>
+      <span class="fork-count">⑂ 16.8k</span>
+      <span class="commit-count">⟳ 25.6k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 442">
+      <div class="activity-bar"><span style="width: 100%"></span></div>
+      <div class="activity-meta">
+        <span>413 commits / 30d</span>
+        <span>score 442</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="8749" data-pushed="1789839513" data-name="workerd" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workerd" target="_blank" rel="noreferrer">workerd</a></div><a class="repo-slug" href="https://github.com/cloudflare/workerd" target="_blank" rel="noreferrer">cloudflare/workerd</a></td>
+  <td><span class="tag tag-cpp">C++</span></td>
+  <td class="description-cell">The JavaScript / Wasm runtime that powers Cloudflare Workers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="WASM" title="Filter by WASM">WASM</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 8.7k</span>
+      <span class="fork-count">⑂ 744</span>
+      <span class="commit-count">⟳ 11.6k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 438">
+      <div class="activity-bar"><span style="width: 99%"></span></div>
+      <div class="activity-meta">
+        <span>752 commits / 30d</span>
+        <span>score 438</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="4549" data-pushed="1789763747" data-name="workers-sdk" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workers-sdk" target="_blank" rel="noreferrer">workers-sdk</a></div><a class="repo-slug" href="https://github.com/cloudflare/workers-sdk" target="_blank" rel="noreferrer">cloudflare/workers-sdk</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">⛅️ Home to Wrangler, the CLI for Cloudflare Workers®<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="cli" title="Filter by cli">cli</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="javascript" title="Filter by javascript">javascript</button><button class="badge keyword-button" type="button" data-filter-keyword="serverless" title="Filter by serverless">serverless</button><button class="badge keyword-button" type="button" data-filter-keyword="wasm" title="Filter by wasm">wasm</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 4.5k</span>
+      <span class="fork-count">⑂ 1.5k</span>
+      <span class="commit-count">⟳ 8.4k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 288">
+      <div class="activity-bar"><span style="width: 65%"></span></div>
+      <div class="activity-meta">
+        <span>206 commits / 30d</span>
+        <span>score 288</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="2867" data-pushed="1788844616" data-name="skills" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/skills" target="_blank" rel="noreferrer">skills</a></div><a class="repo-slug" href="https://github.com/cloudflare/skills" target="_blank" rel="noreferrer">cloudflare/skills</a></td>
+  <td><span class="tag tag-shell">Shell</span></td>
+  <td class="description-cell">Skills for teaching agents how to build on Cloudflare.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="skills" title="Filter by skills">skills</button><button class="badge keyword-button" type="button" data-filter-keyword="workers" title="Filter by workers">workers</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.9k</span>
+      <span class="fork-count">⑂ 284</span>
+      <span class="commit-count">⟳ 244</span>
+    </div>
+    <span class="last-updated">⏱ Sep 08, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 216">
+      <div class="activity-bar"><span style="width: 49%"></span></div>
+      <div class="activity-meta">
+        <span>168 commits / 30d</span>
+        <span>score 216</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="989" data-pushed="1789431956" data-name="nimbus" data-cluster="docs-templates-community">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/nimbus" target="_blank" rel="noreferrer">nimbus</a></div><a class="repo-slug" href="https://github.com/cloudflare/nimbus" target="_blank" rel="noreferrer">cloudflare/nimbus</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Docs for humans and agents, built on Astro<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-docs-templates-community">Docs, Templates &amp; Community</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 989</span>
+      <span class="fork-count">⑂ 34</span>
+      <span class="commit-count">⟳ 319</span>
+    </div>
+    <span class="last-updated">⏱ Sep 15, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 189">
+      <div class="activity-bar"><span style="width: 43%"></span></div>
+      <div class="activity-meta">
+        <span>135 commits / 30d</span>
+        <span>score 189</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="9995" data-pushed="1789851937" data-name="cloudflare-os" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-os" target="_blank" rel="noreferrer">cloudflare-os</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-os" target="_blank" rel="noreferrer">cloudflare/cloudflare-os</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Agent workspace built on Cloudflare Workers for creating documents, building apps, and running agents with your company’s context and systems.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 10k</span>
+      <span class="fork-count">⑂ 1.2k</span>
+      <span class="commit-count">⟳ 806</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 189">
+      <div class="activity-bar"><span style="width: 43%"></span></div>
+      <div class="activity-meta">
+        <span>99 commits / 30d</span>
+        <span>score 189</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="8822" data-pushed="1789743786" data-name="vinext" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/vinext" target="_blank" rel="noreferrer">vinext</a></div><a class="repo-slug" href="https://github.com/cloudflare/vinext" target="_blank" rel="noreferrer">cloudflare/vinext</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Vite plugin that reimplements the Next.js API surface — deploy anywhere<div class="topic-row"></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 8.8k</span>
+      <span class="fork-count">⑂ 408</span>
+      <span class="commit-count">⟳ 1.9k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 183">
+      <div class="activity-bar"><span style="width: 42%"></span></div>
+      <div class="activity-meta">
+        <span>100 commits / 30d</span>
+        <span>score 183</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="1329" data-pushed="1789163705" data-name="terraform-provider-cloudflare" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/terraform-provider-cloudflare" target="_blank" rel="noreferrer">terraform-provider-cloudflare</a></div><a class="repo-slug" href="https://github.com/cloudflare/terraform-provider-cloudflare" target="_blank" rel="noreferrer">cloudflare/terraform-provider-cloudflare</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Cloudflare Terraform Provider<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Terraform" title="Filter by Terraform">Terraform</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="terraform-provider" title="Filter by terraform-provider">terraform-provider</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-sdks-apis-iac">SDKs, APIs &amp; Infrastructure as Code</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.3k</span>
+      <span class="fork-count">⑂ 884</span>
+      <span class="commit-count">⟳ 7k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 168">
+      <div class="activity-bar"><span style="width: 38%"></span></div>
+      <div class="activity-meta">
+        <span>114 commits / 30d</span>
+        <span>score 168</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="5605" data-pushed="1789837358" data-name="agents" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/agents" target="_blank" rel="noreferrer">agents</a></div><a class="repo-slug" href="https://github.com/cloudflare/agents" target="_blank" rel="noreferrer">cloudflare/agents</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Build and deploy AI Agents on Cloudflare <div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button><button class="badge keyword-button" type="button" data-filter-keyword="ai" title="Filter by ai">ai</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="durable-objects" title="Filter by durable-objects">durable-objects</button><button class="badge keyword-button" type="button" data-filter-keyword="workflows" title="Filter by workflows">workflows</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 5.6k</span>
+      <span class="fork-count">⑂ 725</span>
+      <span class="commit-count">⟳ 1.6k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 145">
+      <div class="activity-bar"><span style="width: 33%"></span></div>
+      <div class="activity-meta">
+        <span>61 commits / 30d</span>
+        <span>score 145</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="3883" data-pushed="1789741281" data-name="kumo" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/kumo" target="_blank" rel="noreferrer">kumo</a></div><a class="repo-slug" href="https://github.com/cloudflare/kumo" target="_blank" rel="noreferrer">cloudflare/kumo</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Cloudflare&#x27;s component library for building modern web applications.<div class="topic-row"></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 3.9k</span>
+      <span class="fork-count">⑂ 180</span>
+      <span class="commit-count">⟳ 596</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 128">
+      <div class="activity-bar"><span style="width: 29%"></span></div>
+      <div class="activity-meta">
+        <span>53 commits / 30d</span>
+        <span>score 128</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="27474" data-pushed="1789166350" data-name="pingora" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/pingora" target="_blank" rel="noreferrer">pingora</a></div><a class="repo-slug" href="https://github.com/cloudflare/pingora" target="_blank" rel="noreferrer">cloudflare/pingora</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">A library for building fast, reliable and evolvable network services.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Pingora" title="Filter by Pingora">Pingora</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-networking-protocols">Networking, Protocols &amp; Performance</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 27.5k</span>
+      <span class="fork-count">⑂ 1.8k</span>
+      <span class="commit-count">⟳ 769</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 121">
+      <div class="activity-bar"><span style="width: 28%"></span></div>
+      <div class="activity-meta">
+        <span>49 commits / 30d</span>
+        <span>score 121</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="12003" data-pushed="1789726205" data-name="quiche" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/quiche" target="_blank" rel="noreferrer">quiche</a></div><a class="repo-slug" href="https://github.com/cloudflare/quiche" target="_blank" rel="noreferrer">cloudflare/quiche</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">🥧 Savoury implementation of the QUIC transport protocol and HTTP/3<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="QUIC" title="Filter by QUIC">QUIC</button><button class="badge keyword-button" type="button" data-filter-keyword="http3" title="Filter by http3">http3</button><button class="badge keyword-button" type="button" data-filter-keyword="network-programming" title="Filter by network-programming">network-programming</button><button class="badge keyword-button" type="button" data-filter-keyword="protocol" title="Filter by protocol">protocol</button><button class="badge keyword-button" type="button" data-filter-keyword="rust" title="Filter by rust">rust</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-networking-protocols">Networking, Protocols &amp; Performance</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 12k</span>
+      <span class="fork-count">⑂ 1.1k</span>
+      <span class="commit-count">⟳ 2.5k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 121">
+      <div class="activity-bar"><span style="width: 28%"></span></div>
+      <div class="activity-meta">
+        <span>33 commits / 30d</span>
+        <span>score 121</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="15763" data-pushed="1789664954" data-name="cloudflared" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflared" target="_blank" rel="noreferrer">cloudflared</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflared" target="_blank" rel="noreferrer">cloudflare/cloudflared</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Cloudflare Tunnel client<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Tunnel" title="Filter by Tunnel">Tunnel</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-tunnel" title="Filter by cloudflare-tunnel">cloudflare-tunnel</button><button class="badge keyword-button" type="button" data-filter-keyword="reverse-proxy" title="Filter by reverse-proxy">reverse-proxy</button><button class="badge keyword-button" type="button" data-filter-keyword="zero-trust-network-access" title="Filter by zero-trust-network-access">zero-trust-network-access</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-sdks-apis-iac">SDKs, APIs &amp; Infrastructure as Code</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 15.8k</span>
+      <span class="fork-count">⑂ 1.4k</span>
+      <span class="commit-count">⟳ 1.9k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 17, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 121">
+      <div class="activity-bar"><span style="width: 27%"></span></div>
+      <div class="activity-meta">
+        <span>33 commits / 30d</span>
+        <span>score 121</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="9221" data-pushed="1789769151" data-name="computer" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/computer" target="_blank" rel="noreferrer">computer</a></div><a class="repo-slug" href="https://github.com/cloudflare/computer" target="_blank" rel="noreferrer">cloudflare/computer</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Give your agent a computer 👾<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 9.2k</span>
+      <span class="fork-count">⑂ 525</span>
+      <span class="commit-count">⟳ 834</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 119">
+      <div class="activity-bar"><span style="width: 27%"></span></div>
+      <div class="activity-meta">
+        <span>35 commits / 30d</span>
+        <span>score 119</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="1042" data-pushed="1789418529" data-name="pint" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/pint" target="_blank" rel="noreferrer">pint</a></div><a class="repo-slug" href="https://github.com/cloudflare/pint" target="_blank" rel="noreferrer">cloudflare/pint</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Prometheus rule linter/validator<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="linter" title="Filter by linter">linter</button><button class="badge keyword-button" type="button" data-filter-keyword="metrics" title="Filter by metrics">metrics</button><button class="badge keyword-button" type="button" data-filter-keyword="observability" title="Filter by observability">observability</button><button class="badge keyword-button" type="button" data-filter-keyword="prometheus" title="Filter by prometheus">prometheus</button><button class="badge keyword-button" type="button" data-filter-keyword="validator" title="Filter by validator">validator</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-observability-systems">Observability, Systems &amp; Libraries</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1k</span>
+      <span class="fork-count">⑂ 70</span>
+      <span class="commit-count">⟳ 3.9k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 14, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 104">
+      <div class="activity-bar"><span style="width: 24%"></span></div>
+      <div class="activity-meta">
+        <span>50 commits / 30d</span>
+        <span>score 104</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="3681" data-pushed="1789773198" data-name="workers-rs" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workers-rs" target="_blank" rel="noreferrer">workers-rs</a></div><a class="repo-slug" href="https://github.com/cloudflare/workers-rs" target="_blank" rel="noreferrer">cloudflare/workers-rs</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Write Cloudflare Workers in 100% Rust via WebAssembly<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="Rust" title="Filter by Rust">Rust</button><button class="badge keyword-button" type="button" data-filter-keyword="WASM" title="Filter by WASM">WASM</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="ffi" title="Filter by ffi">ffi</button><button class="badge keyword-button" type="button" data-filter-keyword="serverless" title="Filter by serverless">serverless</button><button class="badge keyword-button" type="button" data-filter-keyword="webassembly" title="Filter by webassembly">webassembly</button><button class="badge keyword-button" type="button" data-filter-keyword="workers-rs" title="Filter by workers-rs">workers-rs</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 3.7k</span>
+      <span class="fork-count">⑂ 432</span>
+      <span class="commit-count">⟳ 944</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 89">
+      <div class="activity-bar"><span style="width: 20%"></span></div>
+      <div class="activity-meta">
+        <span>9 commits / 30d</span>
+        <span>score 89</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="16191" data-pushed="1789414142" data-name="security-audit-skill" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/security-audit-skill" target="_blank" rel="noreferrer">security-audit-skill</a></div><a class="repo-slug" href="https://github.com/cloudflare/security-audit-skill" target="_blank" rel="noreferrer">cloudflare/security-audit-skill</a></td>
+  <td><span class="tag tag-js">JavaScript</span></td>
+  <td class="description-cell">A coding-agent skill for multi-phase security audits with independently verified, machine-readable findings<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 16.2k</span>
+      <span class="fork-count">⑂ 887</span>
+      <span class="commit-count">⟳ 14</span>
+    </div>
+    <span class="last-updated">⏱ Sep 14, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 80">
+      <div class="activity-bar"><span style="width: 18%"></span></div>
+      <div class="activity-meta">
+        <span>3 commits / 30d</span>
+        <span>score 80</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="1133" data-pushed="1789785225" data-name="sandbox-sdk" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/sandbox-sdk" target="_blank" rel="noreferrer">sandbox-sdk</a></div><a class="repo-slug" href="https://github.com/cloudflare/sandbox-sdk" target="_blank" rel="noreferrer">cloudflare/sandbox-sdk</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Run sandboxed code environments on Cloudflare&#x27;s edge network<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="agent" title="Filter by agent">agent</button><button class="badge keyword-button" type="button" data-filter-keyword="agents" title="Filter by agents">agents</button><button class="badge keyword-button" type="button" data-filter-keyword="ai" title="Filter by ai">ai</button><button class="badge keyword-button" type="button" data-filter-keyword="code-interpreter" title="Filter by code-interpreter">code-interpreter</button><button class="badge keyword-button" type="button" data-filter-keyword="containers" title="Filter by containers">containers</button><button class="badge keyword-button" type="button" data-filter-keyword="devtools" title="Filter by devtools">devtools</button><button class="badge keyword-button" type="button" data-filter-keyword="sandbox" title="Filter by sandbox">sandbox</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.1k</span>
+      <span class="fork-count">⑂ 115</span>
+      <span class="commit-count">⟳ 777</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 79">
+      <div class="activity-bar"><span style="width: 18%"></span></div>
+      <div class="activity-meta">
+        <span>12 commits / 30d</span>
+        <span>score 79</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="3987" data-pushed="1789568345" data-name="capnweb" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/capnweb" target="_blank" rel="noreferrer">capnweb</a></div><a class="repo-slug" href="https://github.com/cloudflare/capnweb" target="_blank" rel="noreferrer">cloudflare/capnweb</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">JavaScript/TypeScript-native, low-boilerplate, object-capability RPC system<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="TypeScript" title="Filter by TypeScript">TypeScript</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 4k</span>
+      <span class="fork-count">⑂ 143</span>
+      <span class="commit-count">⟳ 216</span>
+    </div>
+    <span class="last-updated">⏱ Sep 16, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 76">
+      <div class="activity-bar"><span style="width: 17%"></span></div>
+      <div class="activity-meta">
+        <span>7 commits / 30d</span>
+        <span>score 76</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="1683" data-pushed="1789575377" data-name="foundations" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/foundations" target="_blank" rel="noreferrer">foundations</a></div><a class="repo-slug" href="https://github.com/cloudflare/foundations" target="_blank" rel="noreferrer">cloudflare/foundations</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Cloudflare&#x27;s Rust service foundations library.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Rust" title="Filter by Rust">Rust</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-observability-systems">Observability, Systems &amp; Libraries</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.7k</span>
+      <span class="fork-count">⑂ 134</span>
+      <span class="commit-count">⟳ 434</span>
+    </div>
+    <span class="last-updated">⏱ Sep 16, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 76">
+      <div class="activity-bar"><span style="width: 17%"></span></div>
+      <div class="activity-meta">
+        <span>13 commits / 30d</span>
+        <span>score 76</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="2647" data-pushed="1789181792" data-name="ebpf_exporter" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/ebpf_exporter" target="_blank" rel="noreferrer">ebpf_exporter</a></div><a class="repo-slug" href="https://github.com/cloudflare/ebpf_exporter" target="_blank" rel="noreferrer">cloudflare/ebpf_exporter</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Prometheus exporter for custom eBPF metrics<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="eBPF" title="Filter by eBPF">eBPF</button><button class="badge keyword-button" type="button" data-filter-keyword="bpf" title="Filter by bpf">bpf</button><button class="badge keyword-button" type="button" data-filter-keyword="libbpf" title="Filter by libbpf">libbpf</button><button class="badge keyword-button" type="button" data-filter-keyword="linux-kernel" title="Filter by linux-kernel">linux-kernel</button><button class="badge keyword-button" type="button" data-filter-keyword="performance" title="Filter by performance">performance</button><button class="badge keyword-button" type="button" data-filter-keyword="prometheus" title="Filter by prometheus">prometheus</button><button class="badge keyword-button" type="button" data-filter-keyword="prometheus-exporter" title="Filter by prometheus-exporter">prometheus-exporter</button><button class="badge keyword-button" type="button" data-filter-keyword="tracing" title="Filter by tracing">tracing</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-observability-systems">Observability, Systems &amp; Libraries</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.6k</span>
+      <span class="fork-count">⑂ 282</span>
+      <span class="commit-count">⟳ 1.1k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 12, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 75">
+      <div class="activity-bar"><span style="width: 17%"></span></div>
+      <div class="activity-meta">
+        <span>17 commits / 30d</span>
+        <span>score 75</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="1871" data-pushed="1789836674" data-name="workers-oauth-provider" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workers-oauth-provider" target="_blank" rel="noreferrer">workers-oauth-provider</a></div><a class="repo-slug" href="https://github.com/cloudflare/workers-oauth-provider" target="_blank" rel="noreferrer">cloudflare/workers-oauth-provider</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">OAuth provider library for Cloudflare Workers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="OAuth" title="Filter by OAuth">OAuth</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.9k</span>
+      <span class="fork-count">⑂ 134</span>
+      <span class="commit-count">⟳ 275</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 72">
+      <div class="activity-bar"><span style="width: 16%"></span></div>
+      <div class="activity-meta">
+        <span>1 commits / 30d</span>
+        <span>score 72</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="1950" data-pushed="1789683901" data-name="wrangler-action" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/wrangler-action" target="_blank" rel="noreferrer">wrangler-action</a></div><a class="repo-slug" href="https://github.com/cloudflare/wrangler-action" target="_blank" rel="noreferrer">cloudflare/wrangler-action</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">🧙‍♀️ easily deploy cloudflare workers applications using wrangler and github actions<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="github-actions" title="Filter by github-actions">github-actions</button><button class="badge keyword-button" type="button" data-filter-keyword="wrangler" title="Filter by wrangler">wrangler</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.9k</span>
+      <span class="fork-count">⑂ 214</span>
+      <span class="commit-count">⟳ 392</span>
+    </div>
+    <span class="last-updated">⏱ Sep 17, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 69">
+      <div class="activity-bar"><span style="width: 16%"></span></div>
+      <div class="activity-meta">
+        <span>1 commits / 30d</span>
+        <span>score 69</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="860" data-pushed="1789650737" data-name="mcp" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/mcp" target="_blank" rel="noreferrer">mcp</a></div><a class="repo-slug" href="https://github.com/cloudflare/mcp" target="_blank" rel="noreferrer">cloudflare/mcp</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">MCP server for the Cloudflare API<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="MCP" title="Filter by MCP">MCP</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="mcp-server" title="Filter by mcp-server">mcp-server</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-ai-agents-mcp">AI, Agents &amp; MCP</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 860</span>
+      <span class="fork-count">⑂ 120</span>
+      <span class="commit-count">⟳ 114</span>
+    </div>
+    <span class="last-updated">⏱ Sep 17, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 64">
+      <div class="activity-bar"><span style="width: 15%"></span></div>
+      <div class="activity-meta">
+        <span>4 commits / 30d</span>
+        <span>score 64</span>
+      </div>
+    </div>
+  </td>
+</tr>
+<tr data-stars="314" data-pushed="1789421362" data-name="python-workers-examples" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/python-workers-examples" target="_blank" rel="noreferrer">python-workers-examples</a></div><a class="repo-slug" href="https://github.com/cloudflare/python-workers-examples" target="_blank" rel="noreferrer">cloudflare/python-workers-examples</a></td>
+  <td><span class="tag tag-py">Python</span></td>
+  <td class="description-cell">No description provided.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button></div></td>
+  <td><a class="cluster-pill cluster-link" href="#cluster-workers-pages-runtime">Workers, Pages &amp; Runtime</a></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 314</span>
+      <span class="fork-count">⑂ 71</span>
+      <span class="commit-count">⟳ 80</span>
+    </div>
+    <span class="last-updated">⏱ Sep 14, 2026</span>
+    <div class="activity-block" aria-label="Recent activity score 60">
+      <div class="activity-bar"><span style="width: 14%"></span></div>
+      <div class="activity-meta">
+        <span>14 commits / 30d</span>
+        <span>score 60</span>
+      </div>
+    </div>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="repo-section" id="cluster-workers-pages-runtime" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-orange"></span>Workers, Pages &amp; Runtime</h2>
+      <p>Workers runtime, Wrangler, Pages, Durable Objects, WASM bindings, templates, and edge developer platform. Showing all qualifying repositories in this cluster by stars.</p>
+    </div>
+    <span class="count-pill">16 repos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-repository">
+        <col class="col-language">
+        <col class="col-description">
+        <col class="col-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="8822" data-pushed="1789743786" data-name="vinext" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/vinext" target="_blank" rel="noreferrer">vinext</a></div><a class="repo-slug" href="https://github.com/cloudflare/vinext" target="_blank" rel="noreferrer">cloudflare/vinext</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Vite plugin that reimplements the Next.js API surface — deploy anywhere<div class="topic-row"></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 8.8k</span>
+      <span class="fork-count">⑂ 408</span>
+      <span class="commit-count">⟳ 1.9k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+  </td>
+</tr>
+<tr data-stars="8749" data-pushed="1789839513" data-name="workerd" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workerd" target="_blank" rel="noreferrer">workerd</a></div><a class="repo-slug" href="https://github.com/cloudflare/workerd" target="_blank" rel="noreferrer">cloudflare/workerd</a></td>
+  <td><span class="tag tag-cpp">C++</span></td>
+  <td class="description-cell">The JavaScript / Wasm runtime that powers Cloudflare Workers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="WASM" title="Filter by WASM">WASM</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 8.7k</span>
+      <span class="fork-count">⑂ 744</span>
+      <span class="commit-count">⟳ 11.6k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+  </td>
+</tr>
+<tr data-stars="4549" data-pushed="1789763747" data-name="workers-sdk" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workers-sdk" target="_blank" rel="noreferrer">workers-sdk</a></div><a class="repo-slug" href="https://github.com/cloudflare/workers-sdk" target="_blank" rel="noreferrer">cloudflare/workers-sdk</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">⛅️ Home to Wrangler, the CLI for Cloudflare Workers®<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="cli" title="Filter by cli">cli</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="javascript" title="Filter by javascript">javascript</button><button class="badge keyword-button" type="button" data-filter-keyword="serverless" title="Filter by serverless">serverless</button><button class="badge keyword-button" type="button" data-filter-keyword="wasm" title="Filter by wasm">wasm</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 4.5k</span>
+      <span class="fork-count">⑂ 1.5k</span>
+      <span class="commit-count">⟳ 8.4k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+  </td>
+</tr>
+<tr data-stars="3987" data-pushed="1789568345" data-name="capnweb" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/capnweb" target="_blank" rel="noreferrer">capnweb</a></div><a class="repo-slug" href="https://github.com/cloudflare/capnweb" target="_blank" rel="noreferrer">cloudflare/capnweb</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">JavaScript/TypeScript-native, low-boilerplate, object-capability RPC system<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="TypeScript" title="Filter by TypeScript">TypeScript</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 4k</span>
+      <span class="fork-count">⑂ 143</span>
+      <span class="commit-count">⟳ 216</span>
+    </div>
+    <span class="last-updated">⏱ Sep 16, 2026</span>
+  </td>
+</tr>
+<tr data-stars="3883" data-pushed="1789741281" data-name="kumo" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/kumo" target="_blank" rel="noreferrer">kumo</a></div><a class="repo-slug" href="https://github.com/cloudflare/kumo" target="_blank" rel="noreferrer">cloudflare/kumo</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Cloudflare&#x27;s component library for building modern web applications.<div class="topic-row"></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 3.9k</span>
+      <span class="fork-count">⑂ 180</span>
+      <span class="commit-count">⟳ 596</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+  </td>
+</tr>
+<tr data-stars="3681" data-pushed="1789773198" data-name="workers-rs" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workers-rs" target="_blank" rel="noreferrer">workers-rs</a></div><a class="repo-slug" href="https://github.com/cloudflare/workers-rs" target="_blank" rel="noreferrer">cloudflare/workers-rs</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Write Cloudflare Workers in 100% Rust via WebAssembly<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="Rust" title="Filter by Rust">Rust</button><button class="badge keyword-button" type="button" data-filter-keyword="WASM" title="Filter by WASM">WASM</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="ffi" title="Filter by ffi">ffi</button><button class="badge keyword-button" type="button" data-filter-keyword="serverless" title="Filter by serverless">serverless</button><button class="badge keyword-button" type="button" data-filter-keyword="webassembly" title="Filter by webassembly">webassembly</button><button class="badge keyword-button" type="button" data-filter-keyword="workers-rs" title="Filter by workers-rs">workers-rs</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 3.7k</span>
+      <span class="fork-count">⑂ 432</span>
+      <span class="commit-count">⟳ 944</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+  </td>
+</tr>
+<tr data-stars="2118" data-pushed="1788893056" data-name="templates" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/templates" target="_blank" rel="noreferrer">templates</a></div><a class="repo-slug" href="https://github.com/cloudflare/templates" target="_blank" rel="noreferrer">cloudflare/templates</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Templates for Cloudflare Workers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.1k</span>
+      <span class="fork-count">⑂ 1k</span>
+      <span class="commit-count">⟳ 1k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 08, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1950" data-pushed="1789683901" data-name="wrangler-action" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/wrangler-action" target="_blank" rel="noreferrer">wrangler-action</a></div><a class="repo-slug" href="https://github.com/cloudflare/wrangler-action" target="_blank" rel="noreferrer">cloudflare/wrangler-action</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">🧙‍♀️ easily deploy cloudflare workers applications using wrangler and github actions<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="github-actions" title="Filter by github-actions">github-actions</button><button class="badge keyword-button" type="button" data-filter-keyword="wrangler" title="Filter by wrangler">wrangler</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.9k</span>
+      <span class="fork-count">⑂ 214</span>
+      <span class="commit-count">⟳ 392</span>
+    </div>
+    <span class="last-updated">⏱ Sep 17, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1871" data-pushed="1789836674" data-name="workers-oauth-provider" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workers-oauth-provider" target="_blank" rel="noreferrer">workers-oauth-provider</a></div><a class="repo-slug" href="https://github.com/cloudflare/workers-oauth-provider" target="_blank" rel="noreferrer">cloudflare/workers-oauth-provider</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">OAuth provider library for Cloudflare Workers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="OAuth" title="Filter by OAuth">OAuth</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.9k</span>
+      <span class="fork-count">⑂ 134</span>
+      <span class="commit-count">⟳ 275</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1459" data-pushed="1789089211" data-name="serverless-registry" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/serverless-registry" target="_blank" rel="noreferrer">serverless-registry</a></div><a class="repo-slug" href="https://github.com/cloudflare/serverless-registry" target="_blank" rel="noreferrer">cloudflare/serverless-registry</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">A container registry backed by Workers and R2.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="R2" title="Filter by R2">R2</button><button class="badge keyword-button" type="button" data-filter-keyword="Containers" title="Filter by Containers">Containers</button><button class="badge keyword-button" type="button" data-filter-keyword="artifacts" title="Filter by artifacts">artifacts</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="container" title="Filter by container">container</button><button class="badge keyword-button" type="button" data-filter-keyword="container-registry" title="Filter by container-registry">container-registry</button><button class="badge keyword-button" type="button" data-filter-keyword="docker" title="Filter by docker">docker</button><button class="badge keyword-button" type="button" data-filter-keyword="docker-registry" title="Filter by docker-registry">docker-registry</button><button class="badge keyword-button" type="button" data-filter-keyword="javascript" title="Filter by javascript">javascript</button><button class="badge keyword-button" type="button" data-filter-keyword="registry" title="Filter by registry">registry</button><button class="badge keyword-button" type="button" data-filter-keyword="typescript" title="Filter by typescript">typescript</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.5k</span>
+      <span class="fork-count">⑂ 123</span>
+      <span class="commit-count">⟳ 108</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1269" data-pushed="1785770046" data-name="partykit" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/partykit" target="_blank" rel="noreferrer">partykit</a></div><a class="repo-slug" href="https://github.com/cloudflare/partykit" target="_blank" rel="noreferrer">cloudflare/partykit</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">PartyKit, for Workers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="agents" title="Filter by agents">agents</button><button class="badge keyword-button" type="button" data-filter-keyword="ai" title="Filter by ai">ai</button><button class="badge keyword-button" type="button" data-filter-keyword="collaboration" title="Filter by collaboration">collaboration</button><button class="badge keyword-button" type="button" data-filter-keyword="durable-objects" title="Filter by durable-objects">durable-objects</button><button class="badge keyword-button" type="button" data-filter-keyword="real-time" title="Filter by real-time">real-time</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.3k</span>
+      <span class="fork-count">⑂ 81</span>
+      <span class="commit-count">⟳ 720</span>
+    </div>
+    <span class="last-updated">⏱ Aug 03, 2026</span>
+  </td>
+</tr>
+<tr data-stars="767" data-pushed="1788164205" data-name="chanfana" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/chanfana" target="_blank" rel="noreferrer">chanfana</a></div><a class="repo-slug" href="https://github.com/cloudflare/chanfana" target="_blank" rel="noreferrer">cloudflare/chanfana</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="OpenAPI" title="Filter by OpenAPI">OpenAPI</button><button class="badge keyword-button" type="button" data-filter-keyword="api" title="Filter by api">api</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="hono" title="Filter by hono">hono</button><button class="badge keyword-button" type="button" data-filter-keyword="honojs" title="Filter by honojs">honojs</button><button class="badge keyword-button" type="button" data-filter-keyword="openapi3" title="Filter by openapi3">openapi3</button><button class="badge keyword-button" type="button" data-filter-keyword="router" title="Filter by router">router</button><button class="badge keyword-button" type="button" data-filter-keyword="swagger" title="Filter by swagger">swagger</button><button class="badge keyword-button" type="button" data-filter-keyword="typescript" title="Filter by typescript">typescript</button><button class="badge keyword-button" type="button" data-filter-keyword="workers" title="Filter by workers">workers</button><button class="badge keyword-button" type="button" data-filter-keyword="workers-script" title="Filter by workers-script">workers-script</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 767</span>
+      <span class="fork-count">⑂ 70</span>
+      <span class="commit-count">⟳ 339</span>
+    </div>
+    <span class="last-updated">⏱ Aug 31, 2026</span>
+  </td>
+</tr>
+<tr data-stars="384" data-pushed="1788935215" data-name="workers-types" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/workers-types" target="_blank" rel="noreferrer">workers-types</a></div><a class="repo-slug" href="https://github.com/cloudflare/workers-types" target="_blank" rel="noreferrer">cloudflare/workers-types</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">TypeScript type definitions for authoring Cloudflare Workers.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="TypeScript" title="Filter by TypeScript">TypeScript</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="typescript-definitions" title="Filter by typescript-definitions">typescript-definitions</button><button class="badge keyword-button" type="button" data-filter-keyword="workers-types" title="Filter by workers-types">workers-types</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 384</span>
+      <span class="fork-count">⑂ 92</span>
+      <span class="commit-count">⟳ 273</span>
+    </div>
+    <span class="last-updated">⏱ Sep 09, 2026</span>
+  </td>
+</tr>
+<tr data-stars="371" data-pushed="1789253635" data-name="puppeteer" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/puppeteer" target="_blank" rel="noreferrer">puppeteer</a></div><a class="repo-slug" href="https://github.com/cloudflare/puppeteer" target="_blank" rel="noreferrer">cloudflare/puppeteer</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Puppeteer Core fork that works with Cloudflare Browser Workers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 371</span>
+      <span class="fork-count">⑂ 56</span>
+      <span class="commit-count">⟳ 5.2k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 12, 2026</span>
+  </td>
+</tr>
+<tr data-stars="314" data-pushed="1789421362" data-name="python-workers-examples" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/python-workers-examples" target="_blank" rel="noreferrer">python-workers-examples</a></div><a class="repo-slug" href="https://github.com/cloudflare/python-workers-examples" target="_blank" rel="noreferrer">cloudflare/python-workers-examples</a></td>
+  <td><span class="tag tag-py">Python</span></td>
+  <td class="description-cell">No description provided.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 314</span>
+      <span class="fork-count">⑂ 71</span>
+      <span class="commit-count">⟳ 80</span>
+    </div>
+    <span class="last-updated">⏱ Sep 14, 2026</span>
+  </td>
+</tr>
+<tr data-stars="270" data-pushed="1787546180" data-name="containers" data-cluster="workers-pages-runtime">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/containers" target="_blank" rel="noreferrer">containers</a></div><a class="repo-slug" href="https://github.com/cloudflare/containers" target="_blank" rel="noreferrer">cloudflare/containers</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Enhance your Workers with serverless containers<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="Containers" title="Filter by Containers">Containers</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="durable-objects" title="Filter by durable-objects">durable-objects</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 270</span>
+      <span class="fork-count">⑂ 43</span>
+      <span class="commit-count">⟳ 350</span>
+    </div>
+    <span class="last-updated">⏱ Aug 24, 2026</span>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="repo-section" id="cluster-ai-agents-mcp" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-purple"></span>AI, Agents &amp; MCP</h2>
+      <p>Agent frameworks, MCP servers, sandbox runtimes, vibe-coding platforms, and Workers AI tooling. Showing all qualifying repositories in this cluster by stars.</p>
+    </div>
+    <span class="count-pill">14 repos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-repository">
+        <col class="col-language">
+        <col class="col-description">
+        <col class="col-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="16191" data-pushed="1789414142" data-name="security-audit-skill" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/security-audit-skill" target="_blank" rel="noreferrer">security-audit-skill</a></div><a class="repo-slug" href="https://github.com/cloudflare/security-audit-skill" target="_blank" rel="noreferrer">cloudflare/security-audit-skill</a></td>
+  <td><span class="tag tag-js">JavaScript</span></td>
+  <td class="description-cell">A coding-agent skill for multi-phase security audits with independently verified, machine-readable findings<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 16.2k</span>
+      <span class="fork-count">⑂ 887</span>
+      <span class="commit-count">⟳ 14</span>
+    </div>
+    <span class="last-updated">⏱ Sep 14, 2026</span>
+  </td>
+</tr>
+<tr data-stars="9995" data-pushed="1789851937" data-name="cloudflare-os" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-os" target="_blank" rel="noreferrer">cloudflare-os</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-os" target="_blank" rel="noreferrer">cloudflare/cloudflare-os</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Agent workspace built on Cloudflare Workers for creating documents, building apps, and running agents with your company’s context and systems.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Workers" title="Filter by Workers">Workers</button><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 10k</span>
+      <span class="fork-count">⑂ 1.2k</span>
+      <span class="commit-count">⟳ 806</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+  </td>
+</tr>
+<tr data-stars="9221" data-pushed="1789769151" data-name="computer" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/computer" target="_blank" rel="noreferrer">computer</a></div><a class="repo-slug" href="https://github.com/cloudflare/computer" target="_blank" rel="noreferrer">cloudflare/computer</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Give your agent a computer 👾<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 9.2k</span>
+      <span class="fork-count">⑂ 525</span>
+      <span class="commit-count">⟳ 834</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+  </td>
+</tr>
+<tr data-stars="5605" data-pushed="1789837358" data-name="agents" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/agents" target="_blank" rel="noreferrer">agents</a></div><a class="repo-slug" href="https://github.com/cloudflare/agents" target="_blank" rel="noreferrer">cloudflare/agents</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Build and deploy AI Agents on Cloudflare <div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button><button class="badge keyword-button" type="button" data-filter-keyword="ai" title="Filter by ai">ai</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="durable-objects" title="Filter by durable-objects">durable-objects</button><button class="badge keyword-button" type="button" data-filter-keyword="workflows" title="Filter by workflows">workflows</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 5.6k</span>
+      <span class="fork-count">⑂ 725</span>
+      <span class="commit-count">⟳ 1.6k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+  </td>
+</tr>
+<tr data-stars="5371" data-pushed="1788869903" data-name="vibesdk" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/vibesdk" target="_blank" rel="noreferrer">vibesdk</a></div><a class="repo-slug" href="https://github.com/cloudflare/vibesdk" target="_blank" rel="noreferrer">cloudflare/vibesdk</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">An open-source vibe coding platform that helps you build your own vibe-coding platform, built entirely on Cloudflare stack <div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="ai" title="Filter by ai">ai</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="coding-agent" title="Filter by coding-agent">coding-agent</button><button class="badge keyword-button" type="button" data-filter-keyword="durable-objects" title="Filter by durable-objects">durable-objects</button><button class="badge keyword-button" type="button" data-filter-keyword="text-to-app" title="Filter by text-to-app">text-to-app</button><button class="badge keyword-button" type="button" data-filter-keyword="vibe-coding" title="Filter by vibe-coding">vibe-coding</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 5.4k</span>
+      <span class="fork-count">⑂ 1.3k</span>
+      <span class="commit-count">⟳ 1.1k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 08, 2026</span>
+  </td>
+</tr>
+<tr data-stars="4224" data-pushed="1788272792" data-name="mcp-server-cloudflare" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/mcp-server-cloudflare" target="_blank" rel="noreferrer">mcp-server-cloudflare</a></div><a class="repo-slug" href="https://github.com/cloudflare/mcp-server-cloudflare" target="_blank" rel="noreferrer">cloudflare/mcp-server-cloudflare</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">No description provided.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="MCP" title="Filter by MCP">MCP</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 4.2k</span>
+      <span class="fork-count">⑂ 522</span>
+      <span class="commit-count">⟳ 387</span>
+    </div>
+    <span class="last-updated">⏱ Sep 01, 2026</span>
+  </td>
+</tr>
+<tr data-stars="2867" data-pushed="1788844616" data-name="skills" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/skills" target="_blank" rel="noreferrer">skills</a></div><a class="repo-slug" href="https://github.com/cloudflare/skills" target="_blank" rel="noreferrer">cloudflare/skills</a></td>
+  <td><span class="tag tag-shell">Shell</span></td>
+  <td class="description-cell">Skills for teaching agents how to build on Cloudflare.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="skills" title="Filter by skills">skills</button><button class="badge keyword-button" type="button" data-filter-keyword="workers" title="Filter by workers">workers</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.9k</span>
+      <span class="fork-count">⑂ 284</span>
+      <span class="commit-count">⟳ 244</span>
+    </div>
+    <span class="last-updated">⏱ Sep 08, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1336" data-pushed="1787118340" data-name="agents-starter" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/agents-starter" target="_blank" rel="noreferrer">agents-starter</a></div><a class="repo-slug" href="https://github.com/cloudflare/agents-starter" target="_blank" rel="noreferrer">cloudflare/agents-starter</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">A starter kit for building ai agents on Cloudflare<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button><button class="badge keyword-button" type="button" data-filter-keyword="ai" title="Filter by ai">ai</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="durable-objects" title="Filter by durable-objects">durable-objects</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.3k</span>
+      <span class="fork-count">⑂ 284</span>
+      <span class="commit-count">⟳ 306</span>
+    </div>
+    <span class="last-updated">⏱ Aug 19, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1167" data-pushed="1789142048" data-name="ai" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/ai" target="_blank" rel="noreferrer">ai</a></div><a class="repo-slug" href="https://github.com/cloudflare/ai" target="_blank" rel="noreferrer">cloudflare/ai</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">No description provided.<div class="topic-row"></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.2k</span>
+      <span class="fork-count">⑂ 347</span>
+      <span class="commit-count">⟳ 1.3k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1144" data-pushed="1789103926" data-name="artifact-fs" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/artifact-fs" target="_blank" rel="noreferrer">artifact-fs</a></div><a class="repo-slug" href="https://github.com/cloudflare/artifact-fs" target="_blank" rel="noreferrer">cloudflare/artifact-fs</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">ArtifactFS is a filesystem driver designed to mount large git repos as quickly as possible, hydrating file contents on-the-fly instead of blocking on the initial clone. It&#x27;s ideal for agents, sandboxes, containers and other use-cases where startup time is critical.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button><button class="badge keyword-button" type="button" data-filter-keyword="QUIC" title="Filter by QUIC">QUIC</button><button class="badge keyword-button" type="button" data-filter-keyword="Containers" title="Filter by Containers">Containers</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="filesystem" title="Filter by filesystem">filesystem</button><button class="badge keyword-button" type="button" data-filter-keyword="fuse" title="Filter by fuse">fuse</button><button class="badge keyword-button" type="button" data-filter-keyword="git" title="Filter by git">git</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.1k</span>
+      <span class="fork-count">⑂ 48</span>
+      <span class="commit-count">⟳ 57</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1133" data-pushed="1789785225" data-name="sandbox-sdk" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/sandbox-sdk" target="_blank" rel="noreferrer">sandbox-sdk</a></div><a class="repo-slug" href="https://github.com/cloudflare/sandbox-sdk" target="_blank" rel="noreferrer">cloudflare/sandbox-sdk</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Run sandboxed code environments on Cloudflare&#x27;s edge network<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="agent" title="Filter by agent">agent</button><button class="badge keyword-button" type="button" data-filter-keyword="agents" title="Filter by agents">agents</button><button class="badge keyword-button" type="button" data-filter-keyword="ai" title="Filter by ai">ai</button><button class="badge keyword-button" type="button" data-filter-keyword="code-interpreter" title="Filter by code-interpreter">code-interpreter</button><button class="badge keyword-button" type="button" data-filter-keyword="containers" title="Filter by containers">containers</button><button class="badge keyword-button" type="button" data-filter-keyword="devtools" title="Filter by devtools">devtools</button><button class="badge keyword-button" type="button" data-filter-keyword="sandbox" title="Filter by sandbox">sandbox</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.1k</span>
+      <span class="fork-count">⑂ 115</span>
+      <span class="commit-count">⟳ 777</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+  </td>
+</tr>
+<tr data-stars="860" data-pushed="1789650737" data-name="mcp" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/mcp" target="_blank" rel="noreferrer">mcp</a></div><a class="repo-slug" href="https://github.com/cloudflare/mcp" target="_blank" rel="noreferrer">cloudflare/mcp</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">MCP server for the Cloudflare API<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="MCP" title="Filter by MCP">MCP</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-workers" title="Filter by cloudflare-workers">cloudflare-workers</button><button class="badge keyword-button" type="button" data-filter-keyword="mcp-server" title="Filter by mcp-server">mcp-server</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 860</span>
+      <span class="fork-count">⑂ 120</span>
+      <span class="commit-count">⟳ 114</span>
+    </div>
+    <span class="last-updated">⏱ Sep 17, 2026</span>
+  </td>
+</tr>
+<tr data-stars="299" data-pushed="1789092150" data-name="cloudflare-os-starter" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-os-starter" target="_blank" rel="noreferrer">cloudflare-os-starter</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-os-starter" target="_blank" rel="noreferrer">cloudflare/cloudflare-os-starter</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">A guide for customizing your Cloudflare OS deployment<div class="topic-row"></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 299</span>
+      <span class="fork-count">⑂ 106</span>
+      <span class="commit-count">⟳ 13</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="277" data-pushed="1786567382" data-name="claude-managed-agents" data-cluster="ai-agents-mcp">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/claude-managed-agents" target="_blank" rel="noreferrer">claude-managed-agents</a></div><a class="repo-slug" href="https://github.com/cloudflare/claude-managed-agents" target="_blank" rel="noreferrer">cloudflare/claude-managed-agents</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">No description provided.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 277</span>
+      <span class="fork-count">⑂ 42</span>
+      <span class="commit-count">⟳ 26</span>
+    </div>
+    <span class="last-updated">⏱ Aug 12, 2026</span>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="repo-section" id="cluster-networking-protocols" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-cyan"></span>Networking, Protocols &amp; Performance</h2>
+      <p>QUIC, HTTP/3, Pingora, WireGuard, HTML rewriting, packet capture, and edge performance tooling. Showing all qualifying repositories in this cluster by stars.</p>
+    </div>
+    <span class="count-pill">9 repos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-repository">
+        <col class="col-language">
+        <col class="col-description">
+        <col class="col-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="27474" data-pushed="1789166350" data-name="pingora" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/pingora" target="_blank" rel="noreferrer">pingora</a></div><a class="repo-slug" href="https://github.com/cloudflare/pingora" target="_blank" rel="noreferrer">cloudflare/pingora</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">A library for building fast, reliable and evolvable network services.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Pingora" title="Filter by Pingora">Pingora</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 27.5k</span>
+      <span class="fork-count">⑂ 1.8k</span>
+      <span class="commit-count">⟳ 769</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="12003" data-pushed="1789726205" data-name="quiche" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/quiche" target="_blank" rel="noreferrer">quiche</a></div><a class="repo-slug" href="https://github.com/cloudflare/quiche" target="_blank" rel="noreferrer">cloudflare/quiche</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">🥧 Savoury implementation of the QUIC transport protocol and HTTP/3<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="QUIC" title="Filter by QUIC">QUIC</button><button class="badge keyword-button" type="button" data-filter-keyword="http3" title="Filter by http3">http3</button><button class="badge keyword-button" type="button" data-filter-keyword="network-programming" title="Filter by network-programming">network-programming</button><button class="badge keyword-button" type="button" data-filter-keyword="protocol" title="Filter by protocol">protocol</button><button class="badge keyword-button" type="button" data-filter-keyword="rust" title="Filter by rust">rust</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 12k</span>
+      <span class="fork-count">⑂ 1.1k</span>
+      <span class="commit-count">⟳ 2.5k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 18, 2026</span>
+  </td>
+</tr>
+<tr data-stars="7196" data-pushed="1782713936" data-name="boringtun" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/boringtun" target="_blank" rel="noreferrer">boringtun</a></div><a class="repo-slug" href="https://github.com/cloudflare/boringtun" target="_blank" rel="noreferrer">cloudflare/boringtun</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Userspace WireGuard® Implementation in Rust<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="WireGuard" title="Filter by WireGuard">WireGuard</button><button class="badge keyword-button" type="button" data-filter-keyword="Rust" title="Filter by Rust">Rust</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 7.2k</span>
+      <span class="fork-count">⑂ 531</span>
+      <span class="commit-count">⟳ 196</span>
+    </div>
+    <span class="last-updated">⏱ Jun 29, 2026</span>
+  </td>
+</tr>
+<tr data-stars="2070" data-pushed="1785345913" data-name="lol-html" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/lol-html" target="_blank" rel="noreferrer">lol-html</a></div><a class="repo-slug" href="https://github.com/cloudflare/lol-html" target="_blank" rel="noreferrer">cloudflare/lol-html</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Low output latency streaming HTML parser/rewriter with CSS selector-based API<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="css-selectors" title="Filter by css-selectors">css-selectors</button><button class="badge keyword-button" type="button" data-filter-keyword="html" title="Filter by html">html</button><button class="badge keyword-button" type="button" data-filter-keyword="parser" title="Filter by parser">parser</button><button class="badge keyword-button" type="button" data-filter-keyword="rewriting" title="Filter by rewriting">rewriting</button><button class="badge keyword-button" type="button" data-filter-keyword="rust" title="Filter by rust">rust</button><button class="badge keyword-button" type="button" data-filter-keyword="stream" title="Filter by stream">stream</button><button class="badge keyword-button" type="button" data-filter-keyword="streaming" title="Filter by streaming">streaming</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.1k</span>
+      <span class="fork-count">⑂ 111</span>
+      <span class="commit-count">⟳ 707</span>
+    </div>
+    <span class="last-updated">⏱ Jul 29, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1156" data-pushed="1789139427" data-name="wirefilter" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/wirefilter" target="_blank" rel="noreferrer">wirefilter</a></div><a class="repo-slug" href="https://github.com/cloudflare/wirefilter" target="_blank" rel="noreferrer">cloudflare/wirefilter</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">An execution engine for Wireshark-like filters<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="compiler" title="Filter by compiler">compiler</button><button class="badge keyword-button" type="button" data-filter-keyword="engine" title="Filter by engine">engine</button><button class="badge keyword-button" type="button" data-filter-keyword="filters" title="Filter by filters">filters</button><button class="badge keyword-button" type="button" data-filter-keyword="firewall" title="Filter by firewall">firewall</button><button class="badge keyword-button" type="button" data-filter-keyword="firewall-configuration" title="Filter by firewall-configuration">firewall-configuration</button><button class="badge keyword-button" type="button" data-filter-keyword="firewall-rules" title="Filter by firewall-rules">firewall-rules</button><button class="badge keyword-button" type="button" data-filter-keyword="rust" title="Filter by rust">rust</button><button class="badge keyword-button" type="button" data-filter-keyword="wireshark" title="Filter by wireshark">wireshark</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.2k</span>
+      <span class="fork-count">⑂ 123</span>
+      <span class="commit-count">⟳ 501</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="789" data-pushed="1785398566" data-name="xdpcap" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/xdpcap" target="_blank" rel="noreferrer">xdpcap</a></div><a class="repo-slug" href="https://github.com/cloudflare/xdpcap" target="_blank" rel="noreferrer">cloudflare/xdpcap</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">tcpdump like XDP packet capture<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="eBPF" title="Filter by eBPF">eBPF</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 789</span>
+      <span class="fork-count">⑂ 78</span>
+      <span class="commit-count">⟳ 58</span>
+    </div>
+    <span class="last-updated">⏱ Jul 30, 2026</span>
+  </td>
+</tr>
+<tr data-stars="744" data-pushed="1789088366" data-name="speedtest" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/speedtest" target="_blank" rel="noreferrer">speedtest</a></div><a class="repo-slug" href="https://github.com/cloudflare/speedtest" target="_blank" rel="noreferrer">cloudflare/speedtest</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Component to perform network speed tests against Cloudflare&#x27;s edge network<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="bandwidth" title="Filter by bandwidth">bandwidth</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="latency" title="Filter by latency">latency</button><button class="badge keyword-button" type="button" data-filter-keyword="network-quality" title="Filter by network-quality">network-quality</button><button class="badge keyword-button" type="button" data-filter-keyword="packet-loss" title="Filter by packet-loss">packet-loss</button><button class="badge keyword-button" type="button" data-filter-keyword="speedtest" title="Filter by speedtest">speedtest</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 744</span>
+      <span class="fork-count">⑂ 83</span>
+      <span class="commit-count">⟳ 170</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="329" data-pushed="1788950625" data-name="isbgpsafeyet.com" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/isbgpsafeyet.com" target="_blank" rel="noreferrer">isbgpsafeyet.com</a></div><a class="repo-slug" href="https://github.com/cloudflare/isbgpsafeyet.com" target="_blank" rel="noreferrer">cloudflare/isbgpsafeyet.com</a></td>
+  <td><span class="tag tag-html">HTML</span></td>
+  <td class="description-cell">Is BGP safe yet?<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="bgp" title="Filter by bgp">bgp</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="hacktoberfest" title="Filter by hacktoberfest">hacktoberfest</button><button class="badge keyword-button" type="button" data-filter-keyword="rpki" title="Filter by rpki">rpki</button><button class="badge keyword-button" type="button" data-filter-keyword="wrangler" title="Filter by wrangler">wrangler</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 329</span>
+      <span class="fork-count">⑂ 349</span>
+      <span class="commit-count">⟳ 1.7k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 09, 2026</span>
+  </td>
+</tr>
+<tr data-stars="305" data-pushed="1789828062" data-name="telescope" data-cluster="networking-protocols">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/telescope" target="_blank" rel="noreferrer">telescope</a></div><a class="repo-slug" href="https://github.com/cloudflare/telescope" target="_blank" rel="noreferrer">cloudflare/telescope</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Cross-browser web performance testing agent<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 305</span>
+      <span class="fork-count">⑂ 36</span>
+      <span class="commit-count">⟳ 197</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="repo-section" id="cluster-security-pki-crypto" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-green"></span>Security, PKI &amp; Cryptography</h2>
+      <p>TLS toolkits, certificate issuance, cryptographic libraries, Privacy Pass, and keyless TLS. Showing all qualifying repositories in this cluster by stars.</p>
+    </div>
+    <span class="count-pill">8 repos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-repository">
+        <col class="col-language">
+        <col class="col-description">
+        <col class="col-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="2435" data-pushed="1783709505" data-name="gokey" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/gokey" target="_blank" rel="noreferrer">gokey</a></div><a class="repo-slug" href="https://github.com/cloudflare/gokey" target="_blank" rel="noreferrer">cloudflare/gokey</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">A simple vaultless password manager in Go<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="deterministic" title="Filter by deterministic">deterministic</button><button class="badge keyword-button" type="button" data-filter-keyword="ecc" title="Filter by ecc">ecc</button><button class="badge keyword-button" type="button" data-filter-keyword="ed25519" title="Filter by ed25519">ed25519</button><button class="badge keyword-button" type="button" data-filter-keyword="key-generator" title="Filter by key-generator">key-generator</button><button class="badge keyword-button" type="button" data-filter-keyword="keychain" title="Filter by keychain">keychain</button><button class="badge keyword-button" type="button" data-filter-keyword="password-generator" title="Filter by password-generator">password-generator</button><button class="badge keyword-button" type="button" data-filter-keyword="password-manager" title="Filter by password-manager">password-manager</button><button class="badge keyword-button" type="button" data-filter-keyword="password-store" title="Filter by password-store">password-store</button><button class="badge keyword-button" type="button" data-filter-keyword="password-vault" title="Filter by password-vault">password-vault</button><button class="badge keyword-button" type="button" data-filter-keyword="rsa-key" title="Filter by rsa-key">rsa-key</button><button class="badge keyword-button" type="button" data-filter-keyword="seed" title="Filter by seed">seed</button><button class="badge keyword-button" type="button" data-filter-keyword="stateless" title="Filter by stateless">stateless</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.4k</span>
+      <span class="fork-count">⑂ 109</span>
+      <span class="commit-count">⟳ 67</span>
+    </div>
+    <span class="last-updated">⏱ Jul 10, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1718" data-pushed="1788991002" data-name="circl" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/circl" target="_blank" rel="noreferrer">circl</a></div><a class="repo-slug" href="https://github.com/cloudflare/circl" target="_blank" rel="noreferrer">cloudflare/circl</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">CIRCL: Cloudflare Interoperable Reusable Cryptographic Library<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="circl" title="Filter by circl">circl</button><button class="badge keyword-button" type="button" data-filter-keyword="cryptography" title="Filter by cryptography">cryptography</button><button class="badge keyword-button" type="button" data-filter-keyword="csidh" title="Filter by csidh">csidh</button><button class="badge keyword-button" type="button" data-filter-keyword="dilithium" title="Filter by dilithium">dilithium</button><button class="badge keyword-button" type="button" data-filter-keyword="ed25519" title="Filter by ed25519">ed25519</button><button class="badge keyword-button" type="button" data-filter-keyword="ed448" title="Filter by ed448">ed448</button><button class="badge keyword-button" type="button" data-filter-keyword="elliptic-curves" title="Filter by elliptic-curves">elliptic-curves</button><button class="badge keyword-button" type="button" data-filter-keyword="fips203" title="Filter by fips203">fips203</button><button class="badge keyword-button" type="button" data-filter-keyword="fips204" title="Filter by fips204">fips204</button><button class="badge keyword-button" type="button" data-filter-keyword="go" title="Filter by go">go</button><button class="badge keyword-button" type="button" data-filter-keyword="golang" title="Filter by golang">golang</button><button class="badge keyword-button" type="button" data-filter-keyword="hpke" title="Filter by hpke">hpke</button><button class="badge keyword-button" type="button" data-filter-keyword="kyber" title="Filter by kyber">kyber</button><button class="badge keyword-button" type="button" data-filter-keyword="ml-dsa" title="Filter by ml-dsa">ml-dsa</button><button class="badge keyword-button" type="button" data-filter-keyword="ml-kem" title="Filter by ml-kem">ml-kem</button><button class="badge keyword-button" type="button" data-filter-keyword="pki" title="Filter by pki">pki</button><button class="badge keyword-button" type="button" data-filter-keyword="post-quantum" title="Filter by post-quantum">post-quantum</button><button class="badge keyword-button" type="button" data-filter-keyword="sidh" title="Filter by sidh">sidh</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.7k</span>
+      <span class="fork-count">⑂ 219</span>
+      <span class="commit-count">⟳ 815</span>
+    </div>
+    <span class="last-updated">⏱ Sep 09, 2026</span>
+  </td>
+</tr>
+<tr data-stars="522" data-pushed="1787937692" data-name="boring" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/boring" target="_blank" rel="noreferrer">boring</a></div><a class="repo-slug" href="https://github.com/cloudflare/boring" target="_blank" rel="noreferrer">cloudflare/boring</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">BoringSSL bindings for the Rust programming language.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Rust" title="Filter by Rust">Rust</button><button class="badge keyword-button" type="button" data-filter-keyword="TLS" title="Filter by TLS">TLS</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 522</span>
+      <span class="fork-count">⑂ 171</span>
+      <span class="commit-count">⟳ 3.5k</span>
+    </div>
+    <span class="last-updated">⏱ Aug 28, 2026</span>
+  </td>
+</tr>
+<tr data-stars="514" data-pushed="1784948721" data-name="gokeyless" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/gokeyless" target="_blank" rel="noreferrer">gokeyless</a></div><a class="repo-slug" href="https://github.com/cloudflare/gokeyless" target="_blank" rel="noreferrer">cloudflare/gokeyless</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Go implementation of the keyless protocol<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Go" title="Filter by Go">Go</button><button class="badge keyword-button" type="button" data-filter-keyword="hsm" title="Filter by hsm">hsm</button><button class="badge keyword-button" type="button" data-filter-keyword="pkcs11" title="Filter by pkcs11">pkcs11</button><button class="badge keyword-button" type="button" data-filter-keyword="pki" title="Filter by pki">pki</button><button class="badge keyword-button" type="button" data-filter-keyword="tls" title="Filter by tls">tls</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 514</span>
+      <span class="fork-count">⑂ 95</span>
+      <span class="commit-count">⟳ 903</span>
+    </div>
+    <span class="last-updated">⏱ Jul 25, 2026</span>
+  </td>
+</tr>
+<tr data-stars="433" data-pushed="1787624093" data-name="svg-hush" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/svg-hush" target="_blank" rel="noreferrer">svg-hush</a></div><a class="repo-slug" href="https://github.com/cloudflare/svg-hush" target="_blank" rel="noreferrer">cloudflare/svg-hush</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Make it safe to serve untrusted SVG files<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="sanitizer" title="Filter by sanitizer">sanitizer</button><button class="badge keyword-button" type="button" data-filter-keyword="security" title="Filter by security">security</button><button class="badge keyword-button" type="button" data-filter-keyword="svg" title="Filter by svg">svg</button><button class="badge keyword-button" type="button" data-filter-keyword="xss-filter" title="Filter by xss-filter">xss-filter</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 433</span>
+      <span class="fork-count">⑂ 24</span>
+      <span class="commit-count">⟳ 35</span>
+    </div>
+    <span class="last-updated">⏱ Aug 25, 2026</span>
+  </td>
+</tr>
+<tr data-stars="416" data-pushed="1785907972" data-name="pp-browser-extension" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/pp-browser-extension" target="_blank" rel="noreferrer">pp-browser-extension</a></div><a class="repo-slug" href="https://github.com/cloudflare/pp-browser-extension" target="_blank" rel="noreferrer">cloudflare/pp-browser-extension</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Client for Privacy Pass protocol providing unlinkable cryptographic tokens <div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="browser-extension" title="Filter by browser-extension">browser-extension</button><button class="badge keyword-button" type="button" data-filter-keyword="chrome-extension" title="Filter by chrome-extension">chrome-extension</button><button class="badge keyword-button" type="button" data-filter-keyword="cryptography" title="Filter by cryptography">cryptography</button><button class="badge keyword-button" type="button" data-filter-keyword="firefox-addon" title="Filter by firefox-addon">firefox-addon</button><button class="badge keyword-button" type="button" data-filter-keyword="privacy-pass" title="Filter by privacy-pass">privacy-pass</button><button class="badge keyword-button" type="button" data-filter-keyword="token" title="Filter by token">token</button><button class="badge keyword-button" type="button" data-filter-keyword="typescript" title="Filter by typescript">typescript</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 416</span>
+      <span class="fork-count">⑂ 13</span>
+      <span class="commit-count">⟳ 363</span>
+    </div>
+    <span class="last-updated">⏱ Aug 05, 2026</span>
+  </td>
+</tr>
+<tr data-stars="334" data-pushed="1787528173" data-name="origin-ca-issuer" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/origin-ca-issuer" target="_blank" rel="noreferrer">origin-ca-issuer</a></div><a class="repo-slug" href="https://github.com/cloudflare/origin-ca-issuer" target="_blank" rel="noreferrer">cloudflare/origin-ca-issuer</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">cert-manager issuer for Origin CA<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="cert-manager" title="Filter by cert-manager">cert-manager</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 334</span>
+      <span class="fork-count">⑂ 78</span>
+      <span class="commit-count">⟳ 116</span>
+    </div>
+    <span class="last-updated">⏱ Aug 23, 2026</span>
+  </td>
+</tr>
+<tr data-stars="321" data-pushed="1789404178" data-name="cfssl_trust" data-cluster="security-pki-crypto">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cfssl_trust" target="_blank" rel="noreferrer">cfssl_trust</a></div><a class="repo-slug" href="https://github.com/cloudflare/cfssl_trust" target="_blank" rel="noreferrer">cloudflare/cfssl_trust</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">CFSSL&#x27;s CA trust store repository<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="TLS" title="Filter by TLS">TLS</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 321</span>
+      <span class="fork-count">⑂ 78</span>
+      <span class="commit-count">⟳ 553</span>
+    </div>
+    <span class="last-updated">⏱ Sep 14, 2026</span>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="repo-section" id="cluster-sdks-apis-iac" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-yellow"></span>SDKs, APIs &amp; Infrastructure as Code</h2>
+      <p>Official API clients, Terraform, cloudflared, and tools for managing Cloudflare resources as code. Showing all qualifying repositories in this cluster by stars.</p>
+    </div>
+    <span class="count-pill">6 repos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-repository">
+        <col class="col-language">
+        <col class="col-description">
+        <col class="col-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="15763" data-pushed="1789664954" data-name="cloudflared" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflared" target="_blank" rel="noreferrer">cloudflared</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflared" target="_blank" rel="noreferrer">cloudflare/cloudflared</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Cloudflare Tunnel client<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Tunnel" title="Filter by Tunnel">Tunnel</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare-tunnel" title="Filter by cloudflare-tunnel">cloudflare-tunnel</button><button class="badge keyword-button" type="button" data-filter-keyword="reverse-proxy" title="Filter by reverse-proxy">reverse-proxy</button><button class="badge keyword-button" type="button" data-filter-keyword="zero-trust-network-access" title="Filter by zero-trust-network-access">zero-trust-network-access</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 15.8k</span>
+      <span class="fork-count">⑂ 1.4k</span>
+      <span class="commit-count">⟳ 1.9k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 17, 2026</span>
+  </td>
+</tr>
+<tr data-stars="2085" data-pushed="1788558681" data-name="cloudflare-go" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-go" target="_blank" rel="noreferrer">cloudflare-go</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-go" target="_blank" rel="noreferrer">cloudflare/cloudflare-go</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">The official Go library for the Cloudflare API<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Go" title="Filter by Go">Go</button><button class="badge keyword-button" type="button" data-filter-keyword="api" title="Filter by api">api</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="sdk" title="Filter by sdk">sdk</button><button class="badge keyword-button" type="button" data-filter-keyword="sdk-go" title="Filter by sdk-go">sdk-go</button><button class="badge keyword-button" type="button" data-filter-keyword="sdk-golang" title="Filter by sdk-golang">sdk-golang</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.1k</span>
+      <span class="fork-count">⑂ 781</span>
+      <span class="commit-count">⟳ 6k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 04, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1403" data-pushed="1789163689" data-name="cf-terraforming" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cf-terraforming" target="_blank" rel="noreferrer">cf-terraforming</a></div><a class="repo-slug" href="https://github.com/cloudflare/cf-terraforming" target="_blank" rel="noreferrer">cloudflare/cf-terraforming</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">A command line utility to facilitate terraforming your existing Cloudflare resources.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Terraform" title="Filter by Terraform">Terraform</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.4k</span>
+      <span class="fork-count">⑂ 172</span>
+      <span class="commit-count">⟳ 1.8k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1329" data-pushed="1789163705" data-name="terraform-provider-cloudflare" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/terraform-provider-cloudflare" target="_blank" rel="noreferrer">terraform-provider-cloudflare</a></div><a class="repo-slug" href="https://github.com/cloudflare/terraform-provider-cloudflare" target="_blank" rel="noreferrer">cloudflare/terraform-provider-cloudflare</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Cloudflare Terraform Provider<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Terraform" title="Filter by Terraform">Terraform</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="terraform-provider" title="Filter by terraform-provider">terraform-provider</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.3k</span>
+      <span class="fork-count">⑂ 884</span>
+      <span class="commit-count">⟳ 7k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="814" data-pushed="1789011155" data-name="cloudflare-typescript" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-typescript" target="_blank" rel="noreferrer">cloudflare-typescript</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-typescript" target="_blank" rel="noreferrer">cloudflare/cloudflare-typescript</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">The official TypeScript library for the Cloudflare API<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="TypeScript" title="Filter by TypeScript">TypeScript</button><button class="badge keyword-button" type="button" data-filter-keyword="api" title="Filter by api">api</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="sdk" title="Filter by sdk">sdk</button><button class="badge keyword-button" type="button" data-filter-keyword="sdk-typescript" title="Filter by sdk-typescript">sdk-typescript</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 814</span>
+      <span class="fork-count">⑂ 188</span>
+      <span class="commit-count">⟳ 4k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 10, 2026</span>
+  </td>
+</tr>
+<tr data-stars="509" data-pushed="1788558992" data-name="cloudflare-python" data-cluster="sdks-apis-iac">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-python" target="_blank" rel="noreferrer">cloudflare-python</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-python" target="_blank" rel="noreferrer">cloudflare/cloudflare-python</a></td>
+  <td><span class="tag tag-py">Python</span></td>
+  <td class="description-cell">The official Python library for the Cloudflare API<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="api" title="Filter by api">api</button><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="sdk" title="Filter by sdk">sdk</button><button class="badge keyword-button" type="button" data-filter-keyword="sdk-python" title="Filter by sdk-python">sdk-python</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 509</span>
+      <span class="fork-count">⑂ 150</span>
+      <span class="commit-count">⟳ 7k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 04, 2026</span>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="repo-section" id="cluster-observability-systems" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-red"></span>Observability, Systems &amp; Libraries</h2>
+      <p>eBPF exporters, Prometheus tooling, service foundations, filesystems, and shared Go/Rust libraries. Showing all qualifying repositories in this cluster by stars.</p>
+    </div>
+    <span class="count-pill">6 repos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-repository">
+        <col class="col-language">
+        <col class="col-description">
+        <col class="col-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="2647" data-pushed="1789181792" data-name="ebpf_exporter" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/ebpf_exporter" target="_blank" rel="noreferrer">ebpf_exporter</a></div><a class="repo-slug" href="https://github.com/cloudflare/ebpf_exporter" target="_blank" rel="noreferrer">cloudflare/ebpf_exporter</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Prometheus exporter for custom eBPF metrics<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="eBPF" title="Filter by eBPF">eBPF</button><button class="badge keyword-button" type="button" data-filter-keyword="bpf" title="Filter by bpf">bpf</button><button class="badge keyword-button" type="button" data-filter-keyword="libbpf" title="Filter by libbpf">libbpf</button><button class="badge keyword-button" type="button" data-filter-keyword="linux-kernel" title="Filter by linux-kernel">linux-kernel</button><button class="badge keyword-button" type="button" data-filter-keyword="performance" title="Filter by performance">performance</button><button class="badge keyword-button" type="button" data-filter-keyword="prometheus" title="Filter by prometheus">prometheus</button><button class="badge keyword-button" type="button" data-filter-keyword="prometheus-exporter" title="Filter by prometheus-exporter">prometheus-exporter</button><button class="badge keyword-button" type="button" data-filter-keyword="tracing" title="Filter by tracing">tracing</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 2.6k</span>
+      <span class="fork-count">⑂ 282</span>
+      <span class="commit-count">⟳ 1.1k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 12, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1683" data-pushed="1789575377" data-name="foundations" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/foundations" target="_blank" rel="noreferrer">foundations</a></div><a class="repo-slug" href="https://github.com/cloudflare/foundations" target="_blank" rel="noreferrer">cloudflare/foundations</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Cloudflare&#x27;s Rust service foundations library.<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Rust" title="Filter by Rust">Rust</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1.7k</span>
+      <span class="fork-count">⑂ 134</span>
+      <span class="commit-count">⟳ 434</span>
+    </div>
+    <span class="last-updated">⏱ Sep 16, 2026</span>
+  </td>
+</tr>
+<tr data-stars="1042" data-pushed="1789418529" data-name="pint" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/pint" target="_blank" rel="noreferrer">pint</a></div><a class="repo-slug" href="https://github.com/cloudflare/pint" target="_blank" rel="noreferrer">cloudflare/pint</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">Prometheus rule linter/validator<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="linter" title="Filter by linter">linter</button><button class="badge keyword-button" type="button" data-filter-keyword="metrics" title="Filter by metrics">metrics</button><button class="badge keyword-button" type="button" data-filter-keyword="observability" title="Filter by observability">observability</button><button class="badge keyword-button" type="button" data-filter-keyword="prometheus" title="Filter by prometheus">prometheus</button><button class="badge keyword-button" type="button" data-filter-keyword="validator" title="Filter by validator">validator</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 1k</span>
+      <span class="fork-count">⑂ 70</span>
+      <span class="commit-count">⟳ 3.9k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 14, 2026</span>
+  </td>
+</tr>
+<tr data-stars="333" data-pushed="1786490232" data-name="ecdysis" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/ecdysis" target="_blank" rel="noreferrer">ecdysis</a></div><a class="repo-slug" href="https://github.com/cloudflare/ecdysis" target="_blank" rel="noreferrer">cloudflare/ecdysis</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">A library for graceful restarts in Rust<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Rust" title="Filter by Rust">Rust</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 333</span>
+      <span class="fork-count">⑂ 17</span>
+      <span class="commit-count">⟳ 19</span>
+    </div>
+    <span class="last-updated">⏱ Aug 11, 2026</span>
+  </td>
+</tr>
+<tr data-stars="220" data-pushed="1787839922" data-name="wildcard" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/wildcard" target="_blank" rel="noreferrer">wildcard</a></div><a class="repo-slug" href="https://github.com/cloudflare/wildcard" target="_blank" rel="noreferrer">cloudflare/wildcard</a></td>
+  <td><span class="tag tag-rust">Rust</span></td>
+  <td class="description-cell">Wildcard matching<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="text-processing" title="Filter by text-processing">text-processing</button><button class="badge keyword-button" type="button" data-filter-keyword="wildcard" title="Filter by wildcard">wildcard</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 220</span>
+      <span class="fork-count">⑂ 8</span>
+      <span class="commit-count">⟳ 27</span>
+    </div>
+    <span class="last-updated">⏱ Aug 27, 2026</span>
+  </td>
+</tr>
+<tr data-stars="217" data-pushed="1788260620" data-name="cbpfc" data-cluster="observability-systems">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cbpfc" target="_blank" rel="noreferrer">cbpfc</a></div><a class="repo-slug" href="https://github.com/cloudflare/cbpfc" target="_blank" rel="noreferrer">cloudflare/cbpfc</a></td>
+  <td><span class="tag tag-go">Go</span></td>
+  <td class="description-cell">cBPF to C or eBPF compiler<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="eBPF" title="Filter by eBPF">eBPF</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 217</span>
+      <span class="fork-count">⑂ 31</span>
+      <span class="commit-count">⟳ 77</span>
+    </div>
+    <span class="last-updated">⏱ Sep 01, 2026</span>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="repo-section" id="cluster-docs-templates-community" data-section>
+  <div class="section-header">
+    <div>
+      <h2><span class="section-mark section-mark-blue"></span>Docs, Templates &amp; Community</h2>
+      <p>Developer documentation, starters, examples, WordPress plugins, and public-facing open source sites. Showing all qualifying repositories in this cluster by stars.</p>
+    </div>
+    <span class="count-pill">3 repos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-repository">
+        <col class="col-language">
+        <col class="col-description">
+        <col class="col-github">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Language</th>
+          <th>Description</th>
+          <th>GitHub</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-stars="5232" data-pushed="1789790982" data-name="cloudflare-docs" data-cluster="docs-templates-community">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/cloudflare-docs" target="_blank" rel="noreferrer">cloudflare-docs</a></div><a class="repo-slug" href="https://github.com/cloudflare/cloudflare-docs" target="_blank" rel="noreferrer">cloudflare/cloudflare-docs</a></td>
+  <td><span class="tag tag-mdx">MDX</span></td>
+  <td class="description-cell">Cloudflare’s documentation<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="cloudflare" title="Filter by cloudflare">cloudflare</button><button class="badge keyword-button" type="button" data-filter-keyword="docs" title="Filter by docs">docs</button><button class="badge keyword-button" type="button" data-filter-keyword="hacktoberfest" title="Filter by hacktoberfest">hacktoberfest</button><button class="badge keyword-button" type="button" data-filter-keyword="markdown" title="Filter by markdown">markdown</button><button class="badge keyword-button" type="button" data-filter-keyword="mdx" title="Filter by mdx">mdx</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 5.2k</span>
+      <span class="fork-count">⑂ 16.8k</span>
+      <span class="commit-count">⟳ 25.6k</span>
+    </div>
+    <span class="last-updated">⏱ Sep 19, 2026</span>
+  </td>
+</tr>
+<tr data-stars="989" data-pushed="1789431956" data-name="nimbus" data-cluster="docs-templates-community">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/nimbus" target="_blank" rel="noreferrer">nimbus</a></div><a class="repo-slug" href="https://github.com/cloudflare/nimbus" target="_blank" rel="noreferrer">cloudflare/nimbus</a></td>
+  <td><span class="tag tag-ts">TypeScript</span></td>
+  <td class="description-cell">Docs for humans and agents, built on Astro<div class="topic-row"><button class="badge keyword-button" type="button" data-filter-keyword="Agents" title="Filter by Agents">Agents</button></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 989</span>
+      <span class="fork-count">⑂ 34</span>
+      <span class="commit-count">⟳ 319</span>
+    </div>
+    <span class="last-updated">⏱ Sep 15, 2026</span>
+  </td>
+</tr>
+<tr data-stars="249" data-pushed="1786174765" data-name="cloudflare-wordpress" data-cluster="docs-templates-community">
+  <td><div class="repo-name"><img src="https://github.com/cloudflare.png?size=32" alt="" class="avatar"><a href="https://github.com/cloudflare/Cloudflare-WordPress" target="_blank" rel="noreferrer">Cloudflare-WordPress</a></div><a class="repo-slug" href="https://github.com/cloudflare/Cloudflare-WordPress" target="_blank" rel="noreferrer">cloudflare/Cloudflare-WordPress</a></td>
+  <td><span class="tag tag-php">PHP</span></td>
+  <td class="description-cell">A Cloudflare plugin for WordPress<div class="topic-row"></div></td>
+  <td class="github-cell">
+    <div class="gh-stats">
+      <span class="star-count">★ 249</span>
+      <span class="fork-count">⑂ 104</span>
+      <span class="commit-count">⟳ 1.1k</span>
+    </div>
+    <span class="last-updated">⏱ Aug 08, 2026</span>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+
+  <footer class="footer">
+    <p style="margin-bottom: 10px;">Useful links:
+      <a class="gh-link" href="https://developers.cloudflare.com/" target="_blank" rel="noreferrer" style="display: inline; margin-left: 6px;">Cloudflare Developers</a>
+      <span style="margin: 0 4px;">·</span>
+      <a class="gh-link" href="https://developers.cloudflare.com/workers/" target="_blank" rel="noreferrer" style="display: inline;">Workers</a>
+      <span style="margin: 0 4px;">·</span>
+      <a class="gh-link" href="https://blog.cloudflare.com/" target="_blank" rel="noreferrer" style="display: inline;">Cloudflare Blog</a>
+    </p>
+    <p style="text-align: center;">Generated from the GitHub API · Last updated: <span id="last-updated-date">2026-09-19 22:38 UTC</span></p>
+  </footer>
+
+<script>
+  const searchInput = document.getElementById('global-table-search');
+  const clearButton = document.getElementById('global-search-clear');
+  const sortStars = document.getElementById('sort-stars');
+  const sortFresh = document.getElementById('sort-fresh');
+
+  function allRows() {
+    return Array.from(document.querySelectorAll('tbody tr'));
+  }
+
+  function applySearch() {
+    const query = searchInput.value.trim().toLowerCase();
+    let visibleRows = 0;
+    document.querySelectorAll('[data-section]').forEach(section => {
+      let sectionVisible = false;
+      section.querySelectorAll('tbody tr').forEach(row => {
+        const match = !query || row.textContent.toLowerCase().includes(query);
+        row.classList.toggle('hidden', !match);
+        if (match) {
+          sectionVisible = true;
+          visibleRows += 1;
+        }
+      });
+      section.classList.toggle('hidden', !sectionVisible);
+    });
+    clearButton.disabled = !query;
+    if (query && visibleRows === 0) {
+      document.querySelectorAll('[data-section], tbody tr').forEach(el => el.classList.remove('hidden'));
+    }
+  }
+
+  function sortTables(kind) {
+    const attr = kind === 'fresh' ? 'pushed' : 'stars';
+    document.querySelectorAll('tbody').forEach(tbody => {
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a, b) => Number(b.dataset[attr] || 0) - Number(a.dataset[attr] || 0));
+      rows.forEach(row => tbody.appendChild(row));
+    });
+    sortStars.classList.toggle('active', kind === 'stars');
+    sortFresh.classList.toggle('active', kind === 'fresh');
+    applySearch();
+  }
+
+  searchInput.addEventListener('input', applySearch);
+  clearButton.addEventListener('click', () => {
+    searchInput.value = '';
+    applySearch();
+    searchInput.focus();
+  });
+  document.addEventListener('click', event => {
+    const keyword = event.target.closest('[data-filter-keyword]');
+    if (!keyword) return;
+    const value = keyword.dataset.filterKeyword || keyword.textContent.trim();
+    searchInput.value = searchInput.value.trim().toLowerCase() === value.trim().toLowerCase() ? '' : value;
+    applySearch();
+    searchInput.focus({ preventScroll: true });
+  });
+  sortStars.addEventListener('click', () => sortTables('stars'));
+  sortFresh.addEventListener('click', () => sortTables('fresh'));
+  sortTables('fresh');
+</script>
+</body>
+</html>
