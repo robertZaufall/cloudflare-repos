@@ -2924,9 +2924,9 @@
           "stars": 249
         },
         "cloudflare/agents": {
-          "forks": 740,
-          "pushed_at": "2026-09-28T00:57:51Z",
-          "stars": 5663
+          "forks": 739,
+          "pushed_at": "2026-09-28T11:58:59Z",
+          "stars": 5664
         },
         "cloudflare/agents-starter": {
           "forks": 285,
@@ -2999,9 +2999,9 @@
           "stars": 325
         },
         "cloudflare/cloudflare-docs": {
-          "forks": 16879,
-          "pushed_at": "2026-09-28T04:09:52Z",
-          "stars": 5259
+          "forks": 16883,
+          "pushed_at": "2026-09-28T11:41:23Z",
+          "stars": 5260
         },
         "cloudflare/cloudflare-go": {
           "forks": 782,
@@ -3009,9 +3009,9 @@
           "stars": 2092
         },
         "cloudflare/cloudflare-os": {
-          "forks": 1254,
-          "pushed_at": "2026-09-27T20:49:11Z",
-          "stars": 10164
+          "forks": 1257,
+          "pushed_at": "2026-09-28T12:03:34Z",
+          "stars": 10168
         },
         "cloudflare/cloudflare-os-starter": {
           "forks": 111,
@@ -3031,12 +3031,12 @@
         "cloudflare/cloudflared": {
           "forks": 1457,
           "pushed_at": "2026-09-25T09:47:18Z",
-          "stars": 15937
+          "stars": 15941
         },
         "cloudflare/computer": {
           "forks": 533,
           "pushed_at": "2026-09-23T16:30:31Z",
-          "stars": 9298
+          "stars": 9303
         },
         "cloudflare/containers": {
           "forks": 43,
@@ -3081,7 +3081,7 @@
         "cloudflare/kumo": {
           "forks": 181,
           "pushed_at": "2026-09-25T19:37:11Z",
-          "stars": 3916
+          "stars": 3917
         },
         "cloudflare/lol-html": {
           "forks": 112,
@@ -3091,17 +3091,17 @@
         "cloudflare/mcp": {
           "forks": 121,
           "pushed_at": "2026-09-25T10:20:49Z",
-          "stars": 891
+          "stars": 892
         },
         "cloudflare/mcp-server-cloudflare": {
-          "forks": 538,
+          "forks": 539,
           "pushed_at": "2026-09-25T15:28:40Z",
-          "stars": 4324
+          "stars": 4326
         },
         "cloudflare/nimbus": {
-          "forks": 34,
+          "forks": 41,
           "pushed_at": "2026-09-27T07:06:42Z",
-          "stars": 1026
+          "stars": 1200
         },
         "cloudflare/origin-ca-issuer": {
           "forks": 79,
@@ -3116,7 +3116,7 @@
         "cloudflare/pingora": {
           "forks": 1757,
           "pushed_at": "2026-09-11T22:39:10Z",
-          "stars": 27542
+          "stars": 27545
         },
         "cloudflare/pint": {
           "forks": 70,
@@ -3141,7 +3141,7 @@
         "cloudflare/quiche": {
           "forks": 1151,
           "pushed_at": "2026-09-25T15:50:13Z",
-          "stars": 12668
+          "stars": 12678
         },
         "cloudflare/sandbox-sdk": {
           "forks": 115,
@@ -3149,9 +3149,9 @@
           "stars": 1140
         },
         "cloudflare/security-audit-skill": {
-          "forks": 1304,
+          "forks": 1309,
           "pushed_at": "2026-09-14T19:29:02Z",
-          "stars": 22429
+          "stars": 22539
         },
         "cloudflare/serverless-registry": {
           "forks": 123,
@@ -3161,7 +3161,7 @@
         "cloudflare/skills": {
           "forks": 295,
           "pushed_at": "2026-09-26T16:30:33Z",
-          "stars": 2919
+          "stars": 2923
         },
         "cloudflare/speedtest": {
           "forks": 83,
@@ -3181,7 +3181,7 @@
         "cloudflare/templates": {
           "forks": 1038,
           "pushed_at": "2026-09-23T15:51:36Z",
-          "stars": 2132
+          "stars": 2133
         },
         "cloudflare/terraform-provider-cloudflare": {
           "forks": 885,
@@ -3189,14 +3189,14 @@
           "stars": 1339
         },
         "cloudflare/vibesdk": {
-          "forks": 1260,
+          "forks": 1261,
           "pushed_at": "2026-09-22T10:49:08Z",
-          "stars": 5385
+          "stars": 5386
         },
         "cloudflare/vinext": {
           "forks": 416,
-          "pushed_at": "2026-09-28T00:11:21Z",
-          "stars": 8860
+          "pushed_at": "2026-09-28T12:07:26Z",
+          "stars": 8861
         },
         "cloudflare/wildcard": {
           "forks": 8,
@@ -3209,13 +3209,13 @@
           "stars": 1161
         },
         "cloudflare/workerd": {
-          "forks": 757,
-          "pushed_at": "2026-09-28T04:35:30Z",
+          "forks": 758,
+          "pushed_at": "2026-09-28T12:01:33Z",
           "stars": 8781
         },
         "cloudflare/workers-oauth-provider": {
           "forks": 136,
-          "pushed_at": "2026-09-25T16:25:15Z",
+          "pushed_at": "2026-09-28T11:11:35Z",
           "stars": 1877
         },
         "cloudflare/workers-rs": {
@@ -3224,8 +3224,8 @@
           "stars": 3695
         },
         "cloudflare/workers-sdk": {
-          "forks": 1543,
-          "pushed_at": "2026-09-28T06:08:02Z",
+          "forks": 1544,
+          "pushed_at": "2026-09-28T12:00:57Z",
           "stars": 4588
         },
         "cloudflare/workers-types": {
@@ -3235,7 +3235,7 @@
         },
         "cloudflare/wrangler-action": {
           "forks": 217,
-          "pushed_at": "2026-09-24T21:14:56Z",
+          "pushed_at": "2026-09-28T08:41:26Z",
           "stars": 1958
         },
         "cloudflare/xdpcap": {
