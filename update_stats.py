@@ -69,6 +69,17 @@ AUTO_KEYWORD_TERMS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("OpenAPI", ("openapi",)),
 )
 SUBSTRING_KEYWORDS = {"Workers", "Pages", "R2", "KV", "D1", "AI", "MCP", "QUIC", "Pingora", "WASM", "TLS"}
+# Fallback descriptions for qualifying repos whose GitHub description is empty.
+# Each is condensed from the upstream README (evidence 2026-10-08) and is used only
+# while the GitHub description stays empty, so upstream edits always win.
+README_DESCRIPTION_FALLBACKS: dict[str, str] = {
+    "forge": "Schema-first OpenAPI code generation and surface tooling framework that generates typed SDKs and CLI interfaces (the pipeline behind the cf CLI).",
+    "ai": "Packages and examples for building AI-powered applications on Cloudflare, including Vercel AI SDK and TanStack AI providers for Workers AI and AI Gateway.",
+    "mcp-server-cloudflare": "Model Context Protocol (MCP) servers that connect MCP clients to Cloudflare services.",
+    "claude-managed-agents": "Run Claude Managed Agents on Cloudflare with a customizable control plane for container and isolate sandboxes.",
+    "python-workers-examples": "Examples for writing Cloudflare Workers in Python.",
+    "containers-demos": "Durable Object Container examples for Cloudflare Containers.",
+}
 
 
 @dataclass(frozen=True)
@@ -454,7 +465,7 @@ def normalize_repo(item: dict[str, Any]) -> dict[str, Any]:
         "name": item.get("name", ""),
         "full_name": item.get("full_name", ""),
         "url": item.get("html_url", ""),
-        "description": item.get("description") or "",
+        "description": item.get("description") or README_DESCRIPTION_FALLBACKS.get(str(item.get("name", "")).lower(), ""),
         "language": item.get("language") or "Mixed",
         "topics": item.get("topics") or [],
         "stars": int(item.get("stargazers_count") or 0),
