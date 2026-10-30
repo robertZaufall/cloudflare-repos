@@ -575,6 +575,9 @@ def cluster_repo(repo: dict[str, Any]) -> Cluster:
         "cf-terraforming": "sdks-apis-iac",
         "forge": "sdks-apis-iac",
         "cf": "sdks-apis-iac",
+        # Evidence 2026-10-30: api-schemas holds the OpenAPI schemas for the
+        # Cloudflare API (no description/topics), so it fell to Workers by default.
+        "api-schemas": "sdks-apis-iac",
         "ebpf_exporter": "observability-systems",
         "pint": "observability-systems",
         "foundations": "observability-systems",
